@@ -116,6 +116,31 @@ export class AdapterA implements IAdapter {
           continue;
         }
 
+        // 从history中计算draws和draws10
+        const historyRecords = await History.find({ poolId }).sort({ ts: 1 });
+        const draws = historyRecords.length;
+        const draws10 = historyRecords.filter(r => r.pos === 9).length;
+
+        // 更新卡池统计数据
+        poolData.draws = draws;
+        poolData.draws10 = draws10;
+
+        // 计算出了多少个up（在up列表中的角色）
+        const upList = poolData.up || [];
+        const upCount = historyRecords.filter(r => upList.includes(r.result.name)).length;
+        poolData.upCount = upCount;
+
+        // 计算出了多少个最高稀有度
+        const mRarity = poolData.mRarity || 6;
+        const mRCount = historyRecords.filter(r => r.rarity === mRarity).length;
+        poolData.mRCount = mRCount;
+
+        // 计算时间范围
+        if (historyRecords.length > 0) {
+          poolData.startTs = historyRecords[0].ts;
+          poolData.endTs = historyRecords[historyRecords.length - 1].ts;
+        }
+
         await Pool.create(poolData);
         newPoolCount++;
       } catch (error) {

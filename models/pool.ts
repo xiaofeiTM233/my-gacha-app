@@ -11,7 +11,9 @@ export interface IPool extends Document {
   draws10?: number;       // 十连次数
   rank?: string;          // 评级
   up?: string[];          // 概率提升
-  mRarity?: number;       // 最高稀有度
+  mRarity?: number;       // 最高稀有度（卡池本身）
+  upCount?: number;       // 出了多少个up
+  mRCount?: number;       // 出了多少个最高稀有度
   createdAt?: Date;       // 创建时间
   updatedAt?: Date;       // 更新时间
 }
@@ -68,6 +70,16 @@ const PoolSchema = new Schema<IPool>(
       default: 6,
       min: 1,
       max: 10,
+    },
+    upCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    mRCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {
