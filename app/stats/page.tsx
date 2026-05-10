@@ -68,21 +68,23 @@ const AVATAR_COLORS = [
   '#7c3aed', '#2563eb', '#059669', '#d97706',
   '#e11d48', '#0891b2', '#db2777', '#4f46e5',
 ];
+// 图片头像底色
+const AVATAR_IMG_BG = '#d4d4d8';
 
 // ====== 子组件 ======
 
 // 角色头像（根据游戏类型决定用图片还是文字 + 内嵌歪角标）
-function CharAvatar({ name, isOffPity, game }: { name: string; isOffPity?: boolean; game?: string }) {
+function CharAvatar({ name, isOffPity, game, size = 36 }: { name: string; isOffPity?: boolean; game?: string; size?: number }) {
   const bgColor = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
   const avatarUrl = game === 'A' ? `https://prts.wiki/w/Special:Redirect/file/头像_${name}.png` : undefined;
 
   return (
     <div style={{ position: 'relative', display: 'inline-block', flexShrink: 0 }}>
       <Avatar
-        size={36}
+        size={size}
         shape="square"
         src={avatarUrl}
-        style={game === 'A' ? { objectFit: 'cover' } : { backgroundColor: bgColor, fontWeight: 700 }}
+        style={game === 'A' ? { objectFit: 'cover', backgroundColor: AVATAR_IMG_BG, border: 'none' } : { backgroundColor: bgColor, fontWeight: 700, border: 'none' }}
       >
         {game !== 'A' && name.charAt(0)}
       </Avatar>
@@ -199,7 +201,7 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Title level={4} style={{ color: '#fff', margin: 0 }}>{pool.name}</Title>
-          <Text type="secondary">{pool.startDate || '?'}-{pool.endDate || '?'}</Text>
+          <Text style={{ color: '#a1a1aa' }}>{pool.startDate || '?'}-{pool.endDate || '?'}</Text>
         </div>
         <Tag
           color="#1677ff"
@@ -218,10 +220,10 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
 
       {hasItems ? (
         <>
-          {/* 出金角色头像列表 */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+          {/* UP角色头像列表 */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 16, flexWrap: 'wrap' }}>
             {upChars.map((name) => (
-              <CharAvatar key={name} name={name} game={pool.game} />
+              <CharAvatar key={name} name={name} game={pool.game} size={24} />
             ))}
           </div>
 
