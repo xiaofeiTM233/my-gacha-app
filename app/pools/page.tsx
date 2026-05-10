@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Table, Input, InputNumber, Button, message, Popconfirm, Tag, Space } from 'antd';
+import { Table, Input, InputNumber, Button, message, Popconfirm, Tag, Space, Select } from 'antd';
+import { CloseOutlined, PlusOutlined as PlusIcon } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, DeleteOutlined, SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 
@@ -25,6 +26,13 @@ interface IPool {
 interface DataType extends IPool {
   key: string;
 }
+
+// 卡池类型选项
+const POOL_TYPES = [
+  { id: 'spring_fest', name: '限定寻访\n春节' },
+  { id: 'anniver_fest', name: '限定寻访\n庆典' },
+  { id: 'normal', name: '标准寻访' },
+] as const;
 
 export default function PoolsPage() {
   const [dataSource, setDataSource] = useState<DataType[]>([]);
@@ -205,72 +213,116 @@ export default function PoolsPage() {
 
   // 可编辑单元格组件
   const EditableCell = ({
-    editing,
+    editing = false,
     dataIndex,
-    inputType,
+    inputType = 'text',
     record,
     children,
     ...restProps
   }: {
-    editing: boolean;
-    dataIndex: keyof DataType;
-    inputType: 'number' | 'text' | 'tags';
-    record: DataType;
-    children: React.ReactNode;
+    editing?: boolean;
+    dataIndex?: keyof DataType;
+    inputType?: string;
+    record?: DataType;
+    children?: React.ReactNode;
     [key: string]: any;
   }) => {
-    // 获取编辑缓存中的值或原始值
-    const cachedValue = editCache[record.key]?.[dataIndex];
-    const displayValue = editing ? cachedValue ?? record[dataIndex] : record[dataIndex];
+    if (!record) return <td {...restProps}>{children}</td>;
 
+    const di = dataIndex!;
+    const cachedValue = editCache[record.key]?.[di];
+    const displayValue = editing ? cachedValue ?? record[di] : record[di];
+
+    // 非编辑模式
     if (!editing) {
-      if (dataIndex === 'up') {
-        const val = record[dataIndex] as unknown as string[];
+      if (di === 'up') {
+        const val = record[di] as unknown as string[];
         return <td {...restProps}>{Array.isArray(val) ? val.map((v) => <Tag key={v}>{v}</Tag>) : null}</td>;
       }
       return <td {...restProps}>{children}</td>;
     }
 
-    if (inputType === 'number') {
+    // 编辑模式 - 用统一类型避免 TS 类型收窄警告
+    const t = inputType as string;
+
+    if (t === 'number') {
       return (
         <td {...restProps}>
           <InputNumber
             style={{ width: '100%' }}
             min={0}
             value={(displayValue as number) ?? 0}
-            onChange={(val) => updateField(record.key, dataIndex, val)}
+            onChange={(val) => updateField(record.key, di, val)}
             size="small"
           />
         </td>
       );
     }
 
-    if (inputType === 'tags') {
-      const val = Array.isArray(displayValue) ? (displayValue as string[]).join(', ') : (displayValue as string) || '';
+    if (t === 'tags') {
+      const tags: string[] = (Array.isArray(displayValue) ? displayValue : []) as string[];
+      const [inputVal, setInputVal] = useState('');
+      const handleAdd = () => {
+        const val = inputVal.trim();
+        if (!val) return;
+        updateField(record.key, di, [...tags, val]);
+        setInputVal('');
+      };
       return (
-        <td {...restProps}>
+        <td {...restProps} style={{ ...restProps.style, verticalAlign: 'top' }}>
+          <div className="flex flex-wrap gap-1 mb-1">
+            {tags.map((tag, idx) => (
+              <Tag
+                key={idx}
+                closable
+                onClose={() => updateField(record.key, di, tags.filter((_, i) => i !== idx))}
+                closeIcon={<CloseOutlined style={{ fontSize: 10 }} />}
+                style={{ marginBottom: 2 }}
+              >
+                {tag}
+              </Tag>
+            ))}
+          </div>
           <Input
             size="small"
-            value={val}
-            placeholder="用逗号分隔多个UP角色"
-            onChange={(e) => updateField(record.key, dataIndex, e.target.value)}
+            value={inputVal}
+            placeholder="输入后按回车添加"
+            onChange={(e) => setInputVal(e.target.value)}
+            onPressEnter={handleAdd}
+            suffix={<PlusIcon onClick={handleAdd} style={{ cursor: 'pointer', color: '#999', fontSize: 12 }} />}
           />
         </td>
       );
     }
 
+    if (t === 'select') {
+      return (
+        <td {...restProps}>
+          <Select
+            size="small"
+            style={{ width: '100%' }}
+            value={(displayValue as string) || undefined}
+            placeholder="选择类型"
+            onChange={(val) => updateField(record.key, di, val)}
+            options={POOL_TYPES.map((pt) => ({ value: pt.id, label: pt.name }))}
+          />
+        </td>
+      );
+    }
+
+    // 默认 text
     return (
       <td {...restProps}>
         <Input
           size="small"
           value={(displayValue as string) || ''}
-          onChange={(e) => updateField(record.key, dataIndex, e.target.value)}
+          onChange={(e) => updateField(record.key, di, e.target.value)}
         />
       </td>
     );
   };
 
-  const columns: (ColumnsType<DataType>[number] & { editable?: boolean; inputType?: 'number' | 'text' | 'tags' })[] = [
+  const columns: (ColumnsType<DataType>[number] & { editable?: boolean; inputType?: 'number' | 'text' | 'tags' | 'select' })[] = [
     {
       title: '卡池ID',
       dataIndex: 'id',
@@ -282,16 +334,17 @@ export default function PoolsPage() {
     {
       title: '名称',
       dataIndex: 'name',
-      width: 200,
+      width: 140,
       editable: true,
       inputType: 'text',
     },
     {
       title: '类型',
       dataIndex: 'type',
-      width: 120,
+      width: 130,
       editable: true,
-      inputType: 'text',
+      inputType: 'select',
+      render: (val: string) => POOL_TYPES.find((t) => t.id === val)?.name || val || '-',
     },
     {
       title: '游戏',
@@ -303,7 +356,7 @@ export default function PoolsPage() {
     {
       title: 'UP角色',
       dataIndex: 'up',
-      width: 220,
+      width: 160,
       editable: true,
       inputType: 'tags',
     },
@@ -431,7 +484,7 @@ export default function PoolsPage() {
           columns={mergedColumns as ColumnsType<DataType>}
           loading={loading}
           rowClassName={(record) => (isEditing(record) ? 'editing-row' : '')}
-          scroll={{ x: 1800, y: 'calc(100vh - 200px)' }}
+          scroll={{ x: 1800, y: 'calc(100vh - 130px)' }}
           pagination={{
             pageSize: 20,
             showSizeChanger: true,
