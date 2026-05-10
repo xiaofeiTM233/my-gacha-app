@@ -1,27 +1,23 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import History from '@/models/history';
-import Pool from '@/models/pool';
+import Pool, { type IPool } from '@/models/pool';
 
-// 高稀有度记录项（只统计 rarity === mR 的）
-export interface IHighRarityItem {
+// mRarity稀有度记录项（只统计 rarity === mRarity 的）
+export interface IMRItem {
   charId: string;
   charName: string;
-  pulls: number;       // 距上一个mR角色的抽数
+  draws: number;       // 距上一个mRarity角色的抽数
   isUp: boolean;       // 是否为UP角色（在up列表中）
 }
 
-// 卡池统计详情
-export interface IPoolDetail {
-  poolId: string;
-  name: string;
-  type: string;
+// 卡池统计详情（基于IPool + 统计计算字段）
+export type IPoolDetail = Pick<IPool, 'id' | 'name' | 'game' | 'draws'> & {
   startDate: string;
   endDate: string;
-  totalPulls: number;        // 总抽数
-  highRarityItems: IHighRarityItem[]; // mR稀有度的所有出金记录
-  upList: string[];          // 该卡池的up列表
-}
+  mRItems: IMRItem[];
+  upList: string[];    // 该卡池的up列表
+};
 
 // 完整统计数据
 export interface IStatsData {
@@ -63,11 +59,11 @@ export async function GET() {
         return `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
       };
 
-      // ====== 找出所有 >= mR 稀有度的记录 ======
+      // ====== 找出所有 >= mRarity 稀有度的记录 ======
       const mRRecords = records.filter((r) => r.rarity >= mRarity);
 
       // 为每个mR记录计算：距上一个mR用了多少抽 + 判断是否UP
-      const highRarityItems: IHighRarityItem[] = [];
+      const mRItems: IMRItem[] = [];
 
       for (let i = 0; i < mRRecords.length; i++) {
         const record = mRRecords[i];
@@ -92,29 +88,29 @@ export async function GET() {
         }
 
         // 抽数 = 当前位置 - 上一个mR位置
-        const pulls = prevMRIndex >= 0 ? recordIndex - prevMRIndex : recordIndex + 1;
+        const draws = prevMRIndex >= 0 ? recordIndex - prevMRIndex : recordIndex + 1;
 
         // 判断是否UP：角色名在up列表中
         const isUp = upList.length > 0 && upList.some(
           (upName) => upName === record.result.name || record.result.name.includes(upName)
         );
 
-        highRarityItems.push({
+        mRItems.push({
           charId: record.result.id,
           charName: record.result.name,
-          pulls,
+          draws,
           isUp,
         });
       }
 
       pools.push({
-        poolId: pool.id,
+        id: pool.id,
         name: pool.name,
-        type: pool.type,
+        game: pool.game,
         startDate: formatDate(pool.startTs as number),
         endDate: formatDate(pool.endTs as number),
-        totalPulls: records.length,
-        highRarityItems,
+        draws: records.length,
+        mRItems,
         upList,
       });
     }

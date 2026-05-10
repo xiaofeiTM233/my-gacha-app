@@ -3,13 +3,14 @@ import mongoose, { Schema, Model, Document } from 'mongoose';
 // 卡池数据模型接口
 export interface IPool extends Document {
   type: string;           // 卡池类型
+  game: string;           // 卡池游戏
   name: string;           // 卡池名称
   id: string;             // 卡池id
   startTs?: number;       // 开始时间戳
   endTs?: number;         // 结束时间戳
   draws?: number;         // 抽卡次数
   draws10?: number;       // 十连次数
-  rank?: string;          // 评级
+  rank?: string;          // 运气评级
   up?: string[];          // 概率提升
   mRarity?: number;       // 最高稀有度（卡池本身）
   upCount?: number;       // 出了多少个up
@@ -67,7 +68,7 @@ const PoolSchema = new Schema<IPool>(
     },
     mRarity: {
       type: Number,
-      default: 6,
+      default: 5,
       min: 1,
       max: 10,
     },
@@ -80,6 +81,12 @@ const PoolSchema = new Schema<IPool>(
       type: Number,
       default: 0,
       min: 0,
+    },
+    game: {
+      type: String,
+      required: true,
+      default: 'A',
+      trim: true,
     },
   },
   {

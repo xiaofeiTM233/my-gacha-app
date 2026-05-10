@@ -112,28 +112,27 @@ export class AdapterA implements IAdapter {
       try {
         const existing = await Pool.findOne({ id: poolId });
 
-        if (existing) {
-          continue;
-        }
-
         // 从history中计算draws和draws10
         const historyRecords = await History.find({ poolId }).sort({ ts: 1 });
         const draws = historyRecords.length;
         const draws10 = historyRecords.filter(r => r.pos === 9).length;
 
-        // 更新卡池统计数据
-        poolData.draws = draws;
-        poolData.draws10 = draws10;
+        // 已有卡池用数据库中的 up/mRarity，新卡池用 poolInfo 的默认值
+        const upList = existing?.up?.length ? existing.up : (poolData.up || []);
+        const mRarity = existing?.mRarity || poolData.mRarity || 6;
 
         // 计算出了多少个up（在up列表中的角色）
-        const upList = poolData.up || [];
         const upCount = historyRecords.filter(r => upList.includes(r.result.name)).length;
-        poolData.upCount = upCount;
 
         // 计算出了多少个最高稀有度
-        const mRarity = poolData.mRarity || 6;
         const mRCount = historyRecords.filter(r => r.rarity === mRarity).length;
+
+        // 写回poolData（新卡池create时需要）
+        poolData.draws = draws;
+        poolData.draws10 = draws10;
+        poolData.upCount = upCount;
         poolData.mRCount = mRCount;
+        poolData.mRarity = mRarity;
 
         // 计算时间范围
         if (historyRecords.length > 0) {
@@ -141,8 +140,23 @@ export class AdapterA implements IAdapter {
           poolData.endTs = historyRecords[historyRecords.length - 1].ts;
         }
 
-        await Pool.create(poolData);
-        newPoolCount++;
+        if (existing) {
+          // 已有卡池：更新统计数据
+          await Pool.updateOne({ id: poolId }, {
+            $set: {
+              draws,
+              draws10,
+              upCount,
+              mRCount,
+              startTs: poolData.startTs,
+              endTs: poolData.endTs,
+            },
+          });
+        } else {
+          // 新卡池：创建
+          await Pool.create(poolData);
+          newPoolCount++;
+        }
       } catch (error) {
         console.error(`❌ 保存卡池失败: ${poolId}`, error);
         throw error;

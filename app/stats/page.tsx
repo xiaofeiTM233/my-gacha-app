@@ -20,21 +20,21 @@ const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 // ====== 类型定义 ======
-interface IHighRarityItem {
+interface IMRItem {
   charId: string;
   charName: string;
-  pulls: number;
+  draws: number;
   isUp: boolean;
 }
 
 interface IPoolDetail {
-  poolId: string;
+  id: string;
   name: string;
-  type: string;
+  game: string;
   startDate: string;
   endDate: string;
-  totalPulls: number;
-  highRarityItems: IHighRarityItem[];
+  draws: number;
+  mRItems: IMRItem[];
   upList: string[];
 }
 
@@ -51,15 +51,15 @@ interface IApiResponse {
 // ====== 颜色工具函数 ======
 // 10以内超欧 | ≤55绿 | 56~100红 | >100深红
 
-function getBarColor(pulls: number): string {
-  if (pulls > 100) return '#991b1b';
-  if (pulls <= 55) return '#10b981';
+function getBarColor(draws: number): string {
+  if (draws > 100) return '#991b1b';
+  if (draws <= 55) return '#10b981';
   return '#ef4444';
 }
 
-function getBarBgColor(pulls: number): string {
-  if (pulls > 100) return '#7f1d1d4d';
-  if (pulls <= 55) return '#064e3b40';
+function getBarBgColor(draws: number): string {
+  if (draws > 100) return '#7f1d1d4d';
+  if (draws <= 55) return '#064e3b40';
   return '#7f1d1d33';
 }
 
@@ -71,18 +71,20 @@ const AVATAR_COLORS = [
 
 // ====== 子组件 ======
 
-// 角色头像（antd Avatar + 内嵌歪角标）
-function CharAvatar({ name, isOffPity }: { name: string; isOffPity?: boolean }) {
+// 角色头像（根据游戏类型决定用图片还是文字 + 内嵌歪角标）
+function CharAvatar({ name, isOffPity, game }: { name: string; isOffPity?: boolean; game?: string }) {
   const bgColor = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+  const avatarUrl = game === 'A' ? `https://prts.wiki/w/Special:Redirect/file/头像_${name}.png` : undefined;
 
   return (
     <div style={{ position: 'relative', display: 'inline-block', flexShrink: 0 }}>
       <Avatar
         size={36}
-        style={{ backgroundColor: bgColor, fontWeight: 700 }}
         shape="square"
+        src={avatarUrl}
+        style={game === 'A' ? { objectFit: 'cover' } : { backgroundColor: bgColor, fontWeight: 700 }}
       >
-        {name.charAt(0)}
+        {game !== 'A' && name.charAt(0)}
       </Avatar>
       {/* 歪角标记：内嵌在头像右上角 */}
       {isOffPity && (
@@ -95,9 +97,9 @@ function CharAvatar({ name, isOffPity }: { name: string; isOffPity?: boolean }) 
 }
 
 // 抽数进度条
-function PullBar({ pulls }: { pulls: number }) {
-  const barColor = getBarColor(pulls);
-  const barBg = getBarBgColor(pulls);
+function DrawBar({ draws }: { draws: number }) {
+  const barColor = getBarColor(draws);
+  const barBg = getBarBgColor(draws);
 
   return (
     <div
@@ -139,23 +141,23 @@ function PullBar({ pulls }: { pulls: number }) {
         />
       </div>
       <Text strong style={{ fontSize: 14, color: '#000', whiteSpace: 'nowrap', position: 'relative', zIndex: 1, paddingLeft: 5 }}>
-        {pulls} 抽
+        {draws} 抽
       </Text>
     </div>
   );
 }
 
-// 高稀有度出金记录条目
-function HighRarityRow({ item }: { item: IHighRarityItem }) {
-  const barWidth = `${Math.min(80, Math.max(25, (item.pulls / 100) * 100))}%`;
+// mRarity稀有度出金记录条目
+function MRRow({ item, game }: { item: IMRItem; game?: string }) {
+  const barWidth = `${Math.min(80, Math.max(25, (item.draws / 100) * 100))}%`;
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 0' }}>
-      <CharAvatar name={item.charName} isOffPity={!item.isUp} />
+      <CharAvatar name={item.charName} isOffPity={!item.isUp} game={game} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: barWidth }}>
-        <PullBar pulls={item.pulls} />
+        <DrawBar draws={item.draws} />
         {/* 超欧标签：展示在右边 */}
-        {item.pulls <= 10 && (
+        {item.draws <= 10 && (
           <Tag
             color="#10b981"
             style={{
@@ -173,18 +175,18 @@ function HighRarityRow({ item }: { item: IHighRarityItem }) {
 
 // 卡池详情区块
 function PoolSection({ pool }: { pool: IPoolDetail }) {
-  const items = pool.highRarityItems;
+  const items = pool.mRItems;
   const hasItems = items.length > 0;
 
   // 将items分组
-  const groups: IHighRarityItem[][] = [];
+  const groups: IMRItem[][] = [];
   if (hasItems) {
     for (let i = 0; i < items.length; i += 20) {
       groups.push(items.slice(i, i + 20));
     }
   }
 
-  const uniqueChars = Array.from(new Set(items.map((i) => i.charName)));
+  const upChars = Array.from(new Set(items.filter((i) => i.isUp).map((i) => i.charName)));
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -210,7 +212,7 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
             padding: '2px 12px',
           }}
         >
-          {pool.totalPulls}抽
+          {pool.draws}抽
         </Tag>
       </div>
 
@@ -218,8 +220,8 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
         <>
           {/* 出金角色头像列表 */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-            {uniqueChars.map((name) => (
-              <CharAvatar key={name} name={name} />
+            {upChars.map((name) => (
+              <CharAvatar key={name} name={name} game={pool.game} />
             ))}
           </div>
 
@@ -233,14 +235,14 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
               )}
               <div>
                 {group.map((item, idx) => (
-                  <HighRarityRow key={`${item.charId}-${idx}`} item={item} />
+                  <MRRow key={`${item.charId}-${idx}`} item={item} game={pool.game} />
                 ))}
               </div>
             </div>
           ))}
         </>
       ) : (
-        <Text type="secondary" style={{ padding: '8px 0', display: 'block' }}>暂无出金记录</Text>
+        <Text type="secondary" style={{ padding: '8px 0', display: 'block' }}>暂无出货记录</Text>
       )}
 
       <Divider style={{ borderColor: '#27272a', marginTop: 8 }} />
@@ -279,13 +281,13 @@ export default function StatsPage() {
   }, [fetchStats]);
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#121214' }}>
+    <Layout style={{ minHeight: '100vh', background: '#1a1a1f' }}>
       {/* 顶部导航栏 */}
       <Header style={{
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        background: '#121214f2',
+        background: '#1a1a1ff2',
         backdropFilter: 'blur(8px)',
         borderBottom: '1px solid #27272a',
         padding: '0 24px',
@@ -349,7 +351,7 @@ export default function StatsPage() {
 
         {/* 卡池详情列表 */}
         {stats && stats.pools.map((pool) => (
-          <PoolSection key={pool.poolId} pool={pool} />
+          <PoolSection key={pool.id} pool={pool} />
         ))}
 
         {/* 空状态 */}
