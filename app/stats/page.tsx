@@ -257,6 +257,7 @@ export default function StatsPage() {
   const [stats, setStats] = useState<IStatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
@@ -279,8 +280,29 @@ export default function StatsPage() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     fetchStats();
   }, [fetchStats]);
+
+  // 等待客户端挂载后再渲染，避免无样式闪烁
+  if (!mounted) {
+    return (
+      <Layout style={{ minHeight: '100vh', background: '#1a1a1f' }}>
+        <Content style={{ maxWidth: 512, margin: '0 auto', width: '100%', padding: '16px 24px' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '80px 0',
+            gap: 16,
+          }}>
+            <div style={{ color: '#52525b' }}>加载中...</div>
+          </div>
+        </Content>
+      </Layout>
+    );
+  }
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#1a1a1f' }}>
@@ -310,6 +332,7 @@ export default function StatsPage() {
           </div>
           <Button
             type="text"
+            size="small"
             icon={<ReloadOutlined spin={loading} />}
             onClick={fetchStats}
             disabled={loading}
