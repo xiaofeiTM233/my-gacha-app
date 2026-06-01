@@ -9,6 +9,9 @@ import {
   Empty,
   Typography,
   Divider,
+  Card,
+  Statistic,
+  Tabs,
   message,
 } from 'antd';
 import {
@@ -173,6 +176,51 @@ function MRRow({ item, game }: { item: IMRItem; game?: string }) {
   );
 }
 
+// 统计卡片组件
+function PoolStats({ pool }: { pool: IPoolDetail }) {
+  const items = pool.mRItems;
+  const totalCount = pool.draws;
+  const dropCount = items.length;
+  const upCount = items.filter((i) => i.isUp).length;
+  const dropRate = totalCount > 0 ? ((dropCount / totalCount) * 100).toFixed(1) : '0';
+  const upRate = dropCount > 0 ? ((upCount / dropCount) * 100).toFixed(1) : '0';
+  const avgDraws = dropCount > 0 ? (totalCount / dropCount).toFixed(1) : '-';
+
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: 12,
+      marginBottom: 16,
+    }}>
+      <Card variant="borderless" styles={{ body: { padding: '12px 0', textAlign: 'center' } }}>
+        <Statistic
+          title="出货个数"
+          value={dropCount}
+          suffix={<span style={{ color: '#71717a', fontSize: 14 }}>({dropRate}%)</span>}
+          styles={{ content: { color: '#10b981', fontWeight: 700 } }}
+        />
+      </Card>
+      <Card variant="borderless" styles={{ body: { padding: '12px 0', textAlign: 'center' } }}>
+        <Statistic
+          title="UP个数"
+          value={upCount}
+          suffix={<span style={{ color: '#71717a', fontSize: 14 }}>({upRate}%)</span>}
+          styles={{ content: { color: '#f59e0b', fontWeight: 700 } }}
+        />
+      </Card>
+      <Card variant="borderless" styles={{ body: { padding: '12px 0', textAlign: 'center' } }}>
+        <Statistic
+          title="抽卡总数"
+          value={totalCount}
+          suffix={<span style={{ color: '#71717a', fontSize: 14 }}>(均{avgDraws}抽)</span>}
+          styles={{ content: { color: '#3b82f6', fontWeight: 700 } }}
+        />
+      </Card>
+    </div>
+  );
+}
+
 // 卡池详情区块
 function PoolSection({ pool }: { pool: IPoolDetail }) {
   const items = pool.mRItems;
@@ -189,7 +237,7 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
   const upChars = Array.from(new Set(items.filter((i) => i.isUp).map((i) => i.charName)));
 
   return (
-    <div style={{ marginBottom: 24 }}>
+    <div>
       {/* 卡池头部 */}
       <div style={{
         display: 'flex',
@@ -244,8 +292,6 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
       ) : (
         <Text type="secondary" style={{ padding: '8px 0', display: 'block' }}>暂无出货记录</Text>
       )}
-
-      <Divider style={{ borderColor: '#27272a', marginTop: 8 }} />
     </div>
   );
 }
@@ -256,6 +302,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('');
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
@@ -265,6 +312,10 @@ export default function StatsPage() {
       if (json.code === 0 && json.data) {
         setStats(json.data);
         setError(null);
+        // 默认选中第一个卡池
+        if (json.data.pools.length > 0 && !activeTab) {
+          setActiveTab(json.data.pools[0].id);
+        }
       } else {
         setError(json.msg || '获取数据失败');
         message.error(json.msg || '获取数据失败');
@@ -275,7 +326,7 @@ export default function StatsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeTab]);
 
   useEffect(() => {
     setMounted(true);
@@ -299,6 +350,21 @@ export default function StatsPage() {
       </div>
     );
   }
+
+  // 当前选中的卡池
+  const activePool = stats?.pools.find((p) => p.id === activeTab);
+
+  // 构建 Tabs items（已按结束时间倒序，新的在前）
+  const tabItems = stats?.pools.map((pool) => ({
+    key: pool.id,
+    label: (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span>{pool.name}</span>
+        <span style={{ color: '#71717a', fontSize: 12 }}>{pool.startDate}</span>
+      </div>
+    ),
+    children: null, // 内容在外面渲染
+  })) || [];
 
   return (
     <div style={{ maxWidth: 512, margin: '0 auto', width: '100%' }}>
@@ -351,10 +417,21 @@ export default function StatsPage() {
         </div>
       )}
 
-      {/* 卡池详情列表 */}
-      {stats && stats.pools.map((pool) => (
-        <PoolSection key={pool.id} pool={pool} />
-      ))}
+      {/* 卡池 Tab 切换 */}
+      {stats && stats.pools.length > 0 && (
+        <>
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            items={tabItems}
+            style={{ color: '#fff' }}
+          />
+          {/* 统计卡片 - 在 Tab 下方，卡池名称上方 */}
+          {activePool && <PoolStats pool={activePool} />}
+          {/* 卡池详情 */}
+          {activePool && <PoolSection pool={activePool} />}
+        </>
+      )}
 
       {/* 空状态 */}
       {stats && stats.pools.length === 0 && (
