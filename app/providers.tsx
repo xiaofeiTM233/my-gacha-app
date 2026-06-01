@@ -12,6 +12,16 @@ export default function AntdProviders({ children }: { children: React.ReactNode 
           token: {
             colorPrimary: '#1677ff',
             borderRadius: 6,
+            colorBgBase: '#1a1a1f',
+            colorBgLayout: '#1a1a1f',
+            colorBgContainer: '#22222a',
+            colorBgElevated: '#27272f',
+          },
+          components: {
+            Layout: {
+              headerBg: '#1a1a1f',
+              bodyBg: '#1a1a1f',
+            },
           },
         }}
       >
