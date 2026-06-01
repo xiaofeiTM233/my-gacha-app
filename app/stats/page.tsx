@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Layout,
   Button,
   Avatar,
   Tag,
@@ -16,7 +15,6 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 
-const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 // ====== 类型定义 ======
@@ -287,112 +285,90 @@ export default function StatsPage() {
   // 等待客户端挂载后再渲染，避免无样式闪烁
   if (!mounted) {
     return (
-      <Layout style={{ minHeight: '100vh', background: '#1a1a1f' }}>
-        <Content style={{ maxWidth: 512, margin: '0 auto', width: '100%', padding: '16px 24px' }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '80px 0',
-            gap: 16,
-          }}>
-            <div style={{ color: '#52525b' }}>加载中...</div>
-          </div>
-        </Content>
-      </Layout>
+      <div style={{ maxWidth: 512, margin: '0 auto', width: '100%' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '80px 0',
+          gap: 16,
+        }}>
+          <div style={{ color: '#52525b' }}>加载中...</div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Layout style={{ minHeight: '100vh', background: '#1a1a1f' }}>
-      {/* 顶部导航栏 */}
-      <Header style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        background: '#1a1a1ff2',
-        backdropFilter: 'blur(8px)',
-        borderBottom: '1px solid #27272a',
-        padding: '0 24px',
-        height: 56,
-        lineHeight: '56px',
-        maxWidth: 512,
-        margin: '0 auto',
-        width: '100%',
+    <div style={{ maxWidth: 512, margin: '0 auto', width: '100%' }}>
+      {/* 页面标题栏 */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 24,
       }}>
+        <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>抽卡统计</span>
+        <Button
+          type="text"
+          size="small"
+          icon={<ReloadOutlined spin={loading} />}
+          onClick={fetchStats}
+          disabled={loading}
+          style={{ color: '#a1a1aa' }}
+        />
+      </div>
+
+      {/* 加载状态 */}
+      {loading && !stats && (
         <div style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
           alignItems: 'center',
-          height: '100%',
+          justifyContent: 'center',
+          padding: '80px 0',
+          gap: 16,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>抽卡统计</span>
-          </div>
-          <Button
-            type="text"
-            size="small"
-            icon={<ReloadOutlined spin={loading} />}
-            onClick={fetchStats}
-            disabled={loading}
-            style={{ color: '#a1a1aa' }}
-          />
+          <Spin size="large" />
+          <Text type="secondary">加载中...</Text>
         </div>
-      </Header>
+      )}
 
-      {/* 主内容区 */}
-      <Content style={{ maxWidth: 512, margin: '0 auto', width: '100%', padding: '16px 24px' }}>
-        {/* 加载状态 */}
-        {loading && !stats && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '80px 0',
-            gap: 16,
-          }}>
-            <Spin size="large" />
-            <Text type="secondary">加载中...</Text>
-          </div>
-        )}
+      {/* 错误状态 */}
+      {error && (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '80px 0',
+          gap: 16,
+        }}>
+          <Empty description={error}>
+            <Button onClick={fetchStats}>重试</Button>
+          </Empty>
+        </div>
+      )}
 
-        {/* 错误状态 */}
-        {error && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '80px 0',
-            gap: 16,
-          }}>
-            <Empty description={error}>
-              <Button onClick={fetchStats}>重试</Button>
-            </Empty>
-          </div>
-        )}
+      {/* 卡池详情列表 */}
+      {stats && stats.pools.map((pool) => (
+        <PoolSection key={pool.id} pool={pool} />
+      ))}
 
-        {/* 卡池详情列表 */}
-        {stats && stats.pools.map((pool) => (
-          <PoolSection key={pool.id} pool={pool} />
-        ))}
-
-        {/* 空状态 */}
-        {stats && stats.pools.length === 0 && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '80px 0',
-            gap: 8,
-          }}>
-            <Empty description={<span>暂无抽卡数据<br /><span style={{ color: '#52525b', fontSize: 13 }}>请先导入抽卡记录</span></span>} />
-          </div>
-        )}
-      </Content>
-    </Layout>
+      {/* 空状态 */}
+      {stats && stats.pools.length === 0 && (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '80px 0',
+          gap: 8,
+        }}>
+          <Empty description={<span>暂无抽卡数据<br /><span style={{ color: '#52525b', fontSize: 13 }}>请先导入抽卡记录</span></span>} />
+        </div>
+      )}
+    </div>
   );
 }

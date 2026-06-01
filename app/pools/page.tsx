@@ -465,10 +465,10 @@ export default function PoolsPage() {
   // 等待客户端挂载后再渲染，避免无样式闪烁
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="flex items-center justify-center" style={{ height: 'calc(100vh - 100px)' }}>
-            <div className="text-gray-500">加载中...</div>
+      <div style={{ padding: 0 }}>
+        <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 200px)' }}>
+            <div style={{ color: '#8c8c8c' }}>加载中...</div>
           </div>
         </div>
       </div>
@@ -476,10 +476,10 @@ export default function PoolsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-[1600px] mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">卡池管理</h1>
+    <div style={{ padding: 0 }}>
+      <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fff', margin: 0 }}>卡池管理</h1>
           <Space>
             <Button icon={<ReloadOutlined />} onClick={fetchPools} loading={loading}>
               刷新
@@ -500,7 +500,7 @@ export default function PoolsPage() {
           columns={mergedColumns as ColumnsType<DataType>}
           loading={loading}
           rowClassName={(record) => (isEditing(record) ? 'editing-row' : '')}
-          scroll={{ x: 1800, y: 'calc(100vh - 130px)' }}
+          scroll={{ x: 1800, y: 'calc(100vh - 160px)' }}
           pagination={{
             pageSize: 20,
             showSizeChanger: true,
