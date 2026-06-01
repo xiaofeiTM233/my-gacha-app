@@ -6,6 +6,7 @@ import {
   HomeOutlined,
   DatabaseOutlined,
   BarChartOutlined,
+  ImportOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
@@ -20,14 +21,19 @@ const menuItems = [
     label: '首页',
   },
   {
+    key: '/stats',
+    icon: <BarChartOutlined />,
+    label: '抽卡统计',
+  },
+  {
     key: '/pools',
     icon: <DatabaseOutlined />,
     label: '卡池管理',
   },
   {
-    key: '/stats',
-    icon: <BarChartOutlined />,
-    label: '抽卡统计',
+    key: '/import',
+    icon: <ImportOutlined />,
+    label: '数据导入',
   },
 ];
 

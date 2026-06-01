@@ -1,12 +1,14 @@
 'use client';
 
 import { ConfigProvider, App, theme } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
 import { StyleProvider } from '@ant-design/cssinjs';
 
 export default function AntdProviders({ children }: { children: React.ReactNode }) {
   return (
     <StyleProvider>
       <ConfigProvider
+        locale={zhCN}
         theme={{
           algorithm: theme.darkAlgorithm,
           token: {

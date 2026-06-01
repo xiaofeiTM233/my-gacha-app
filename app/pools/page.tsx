@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Table, Input, InputNumber, Button, message, Popconfirm, Tag, Space, Select } from 'antd';
+import { App, Table, Input, InputNumber, Button, Popconfirm, Tag, Space } from 'antd';
 import { CloseOutlined, PlusOutlined as PlusIcon } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, DeleteOutlined, SaveOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -27,14 +27,8 @@ interface DataType extends IPool {
   key: string;
 }
 
-// 卡池类型选项
-const POOL_TYPES = [
-  { id: 'spring_fest', name: '限定寻访\n春节' },
-  { id: 'anniver_fest', name: '限定寻访\n庆典' },
-  { id: 'normal', name: '标准寻访' },
-] as const;
-
 export default function PoolsPage() {
+  const { message } = App.useApp();
   const [dataSource, setDataSource] = useState<DataType[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -298,21 +292,6 @@ export default function PoolsPage() {
       );
     }
 
-    if (t === 'select') {
-      return (
-        <td {...restProps}>
-          <Select
-            size="small"
-            style={{ width: '100%' }}
-            value={(displayValue as string) || undefined}
-            placeholder="选择类型"
-            onChange={(val) => updateField(record.key, di, val)}
-            options={POOL_TYPES.map((pt) => ({ value: pt.id, label: pt.name }))}
-          />
-        </td>
-      );
-    }
-
     // 默认 text
     return (
       <td {...restProps}>
@@ -346,8 +325,7 @@ export default function PoolsPage() {
       dataIndex: 'type',
       width: 130,
       editable: true,
-      inputType: 'select',
-      render: (val: string) => POOL_TYPES.find((t) => t.id === val)?.name || val || '-',
+      inputType: 'text',
     },
     {
       title: '游戏',
