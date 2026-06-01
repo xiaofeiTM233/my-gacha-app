@@ -231,7 +231,7 @@ export class AdapterA implements IAdapter {
           draws: 0,
           draws10: 0,
           rank: '',
-          mRarity: 6,
+          mRarity: 5,
         });
       }
     });
