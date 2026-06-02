@@ -55,7 +55,7 @@ export async function GET() {
       // 格式化日期 MM.DD
       const formatDate = (ts: number) => {
         if (!ts) return '';
-        const d = new Date(ts * 1000);
+        const d = new Date(ts);
         return `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
       };
 
