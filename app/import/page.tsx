@@ -10,6 +10,7 @@ import {
   Input,
   Alert,
   Spin,
+  Collapse,
 } from 'antd';
 import {
   UploadOutlined,
@@ -210,15 +211,22 @@ export default function ImportPage() {
               支持直接粘贴 JSON 数据或上传 JSON 文件
             </div>
 
-            <pre style={{
-              background: '#1a1a1a',
-              padding: 16,
-              borderRadius: 8,
-              overflow: 'auto',
-              marginBottom: 16,
-              fontSize: 12,
-            }}>
-              <code>{`{
+            <Collapse
+              ghost
+              style={{ marginBottom: 16 }}
+              items={[{
+                key: '1',
+                label: <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>示例数据格式</span>,
+                children: (
+                  <pre style={{
+                    background: '#1a1a1a',
+                    padding: 16,
+                    borderRadius: 8,
+                    overflow: 'auto',
+                    fontSize: 12,
+                    margin: 0,
+                  }}>
+                    <code>{`{
   "code": 0,
   "data": {
     "list": [
@@ -237,7 +245,10 @@ export default function ImportPage() {
   },
   "msg": "success"
 }`}</code>
-            </pre>
+                  </pre>
+                ),
+              }]}
+            />
 
             <Upload
               accept=".json"

@@ -9,6 +9,8 @@ export interface IMRItem {
   charName: string;
   draws: number;       // 距上一个mRarity角色的抽数
   isUp: boolean;       // 是否为UP角色（在up列表中）
+  ts: number;          // 该记录的时间戳
+
 }
 
 // 卡池统计详情（基于IPool + 统计计算字段）
@@ -100,6 +102,7 @@ export async function GET() {
           charName: record.result.name,
           draws,
           isUp,
+          ts: record.ts,
         });
       }
 

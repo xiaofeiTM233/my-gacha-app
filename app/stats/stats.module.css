@@ -1,0 +1,114 @@
+/* ====== Stats Page ====== */
+
+/* 页面容器 */
+.pageWrapper {
+  max-width: 430px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 页面标题栏 */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.reloadBtn {
+  color: #a1a1aa;
+}
+
+/* 加载 / 错误 / 空状态 共用 */
+.centerBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 16px;
+}
+
+.centerBlockTight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 8px;
+}
+
+.emptySubtext {
+  color: #52525b;
+  font-size: 13px;
+}
+
+/* ====== PoolStats 统计卡片 ====== */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.statSuffix {
+  color: #71717a;
+  font-size: 14px;
+}
+
+/* ====== 卡池详情 ====== */
+.poolHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 5px;
+}
+
+.poolHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.poolTitle {
+  color: #fff;
+  margin: 0;
+}
+
+.poolDate {
+  color: #a1a1aa;
+}
+
+/* UP角色头像列表 */
+.upList {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  padding: 0 5px;
+}
+
+/* 暂无出货 */
+.noItems {
+  padding: 8px 5px;
+  display: block;
+}
+
+/* ====== Tab 标签 ====== */
+.tabLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tabDate {
+  color: #71717a;
+  font-size: 12px;
+}
