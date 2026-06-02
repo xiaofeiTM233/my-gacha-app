@@ -11,19 +11,19 @@
   "dependencies": {
     "@ant-design/cssinjs": "^2.1.2",
     "antd": "^6.4.3",
-    "mongoose": "^9.6.2",
-    "next": "^16.2.6",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "mongoose": "^9.6.3",
+    "next": "^16.2.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19.2.15",
+    "@types/node": "^25",
+    "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^6"
   }
 }
