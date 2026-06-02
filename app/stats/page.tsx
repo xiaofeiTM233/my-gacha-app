@@ -10,6 +10,7 @@ import {
   Card,
   Statistic,
   Tabs,
+  Divider,
   message,
 } from 'antd';
 import {
@@ -99,13 +100,14 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
         map.get(key)!.push(item);
         return map;
       }, new Map<string, IMRItem[]>())
-      .values()
+        .values()
     ).sort((a, b) => a[0].ts - b[0].ts);
 
   const upChars = Array.from(new Set(items.filter((i) => i.isUp).map((i) => i.charName)));
 
   return (
-    <div>
+    <>
+      <Divider size="small" />
       {/* 卡池头部 */}
       <div className={pageStyles.poolHeader}>
         <div className={pageStyles.poolHeaderLeft}>
@@ -134,7 +136,8 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
             ))}
           </div>
 
-          {/* 出金记录列表 */}
+          <Divider size="small" />
+          {/* 出货记录列表 */}
           {groups.map((group, groupIdx) => {
             const isMultiGold = group.length > 1;
             return (
@@ -171,7 +174,7 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
       ) : (
         <Text type="secondary" className={pageStyles.noItems}>暂无出货记录</Text>
       )}
-    </div>
+    </>
   );
 }
 
