@@ -36,8 +36,6 @@ export default function PoolsPage() {
   const [newRowKey, setNewRowKey] = useState<string>('');
   // 存储每行编辑中的临时数据
   const [editCache, setEditCache] = useState<Record<string, Partial<DataType>>>({});
-  // 控制页面是否显示（等待样式加载）
-  const [mounted, setMounted] = useState(false);
 
   const fetchPools = useCallback(async () => {
     setLoading(true);
@@ -59,7 +57,6 @@ export default function PoolsPage() {
   }, []);
 
   useEffect(() => {
-    setMounted(true);
     fetchPools();
   }, [fetchPools]);
 
@@ -439,19 +436,6 @@ export default function PoolsPage() {
       }),
     };
   });
-
-  // 等待客户端挂载后再渲染，避免无样式闪烁
-  if (!mounted) {
-    return (
-      <div style={{ padding: 0 }}>
-        <div style={{ maxWidth: 1600, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 200px)' }}>
-            <div style={{ color: '#8c8c8c' }}>加载中...</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ padding: 0 }}>

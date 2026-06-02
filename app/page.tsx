@@ -56,7 +56,6 @@ export default function Home() {
   const [stats, setStats] = useState<IStatsData | null>(null);
   const [pools, setPools] = useState<IPool[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -82,17 +81,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setMounted(true);
     fetchData();
   }, [fetchData]);
-
-  if (!mounted) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 200px)' }}>
-        <Text style={{ color: '#8c8c8c' }}>加载中...</Text>
-      </div>
-    );
-  }
 
   // ====== 计算汇总数据 ======
   const allPools = (stats?.pools || []).slice().sort((a, b) => b.id.localeCompare(a.id));
@@ -122,12 +112,6 @@ export default function Home() {
     .slice(-10)
     .reverse();
 
-  const loadingContent = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
-      <Spin size="large" />
-    </div>
-  );
-
   return (
     <div style={{ padding: 0 }}>
       <div style={{ maxWidth: 1600, margin: '0 auto' }}>
@@ -137,7 +121,7 @@ export default function Home() {
       </div>
 
       {loading && !stats ? (
-        loadingContent
+        <Spin size="large" style={{ display: 'flex', justifyContent: 'center' }} />
       ) : totalPools === 0 ? (
         /* 空状态 */
         <Card style={{ borderColor: '#303030', textAlign: 'center', padding: '60px 0' }}>

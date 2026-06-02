@@ -49,9 +49,7 @@ export default function SiderLayout({ children }: { children: React.ReactNode })
 
   if (!mounted) {
     return (
-      <div style={{ minHeight: '100vh', background: '#1a1a1f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#8c8c8c' }}>加载中...</div>
-      </div>
+      <></>
     );
   }
 

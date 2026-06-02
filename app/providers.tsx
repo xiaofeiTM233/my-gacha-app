@@ -18,6 +18,7 @@ export default function AntdProviders({ children }: { children: React.ReactNode 
             colorBgLayout: '#1a1a1f',
             colorBgContainer: '#22222a',
             colorBgElevated: '#27272f',
+            colorBgMask: 'rgba(0, 0, 0, 0.45)',
           },
           components: {
             Layout: {

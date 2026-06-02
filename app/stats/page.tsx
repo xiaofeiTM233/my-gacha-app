@@ -185,8 +185,6 @@ export default function StatsPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('');
 
-  // 初始加载（effect 内不调用 setState，避免 react-compiler 警告）
-  // loading 已由 useState(true) 初始化，只需在完成/失败时更新
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -269,10 +267,7 @@ export default function StatsPage() {
 
       {/* 加载状态 */}
       {loading && !stats && (
-        <div className={pageStyles.centerBlock}>
-          <Spin size="large" />
-          <Text type="secondary">加载中...</Text>
-        </div>
+        <Spin size="large" style={{ display: 'flex', justifyContent: 'center' }} />
       )}
 
       {/* 错误状态 */}
