@@ -60,7 +60,7 @@ export async function PUT(request: Request) {
     const pool = await Pool.findOneAndUpdate(
       { id },
       { $set: updateData },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!pool) {

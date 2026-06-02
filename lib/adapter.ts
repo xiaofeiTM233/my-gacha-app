@@ -312,33 +312,23 @@ export class AdapterA implements IAdapter {
   async save(items: any[], poolInfo?: Map<string, any>): Promise<void> {
     await dbConnect();
 
-    // 先保存卡池信息
+    // 1. 批量 upsert 抽卡记录（存在则覆盖，不存在则插入）
+    if (items.length > 0) {
+      const bulkOps = items.map(item => ({
+        updateOne: {
+          filter: { id: item.id },
+          update: { $set: item },
+          upsert: true,
+        },
+      }));
+      const result = await History.bulkWrite(bulkOps, { ordered: false });
+      console.log(`✅ 抽卡记录: 插入 ${result.upsertedCount} 条, 更新 ${result.modifiedCount} 条`);
+    }
+
+    // 2. 抽卡记录保存完成后，再计算并保存卡池信息
     if (poolInfo && poolInfo.size > 0) {
       await this.savePools(poolInfo);
     }
-
-    // 保存抽卡记录
-    let newCount = 0;
-    let skipCount = 0;
-
-    for (const item of items) {
-      try {
-        const existing = await History.findOne({ id: item.id });
-
-        if (existing) {
-          skipCount++;
-          continue;
-        }
-
-        await History.create(item);
-        newCount++;
-      } catch (error) {
-        console.error(`❌ 保存记录失败: ${item.id}`, error);
-        throw error;
-      }
-    }
-
-    console.log(`✅ 抽卡记录: 新增 ${newCount} 条, 跳过 ${skipCount} 条`);
   }
 }
 
