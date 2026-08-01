@@ -259,7 +259,9 @@ export default function PoolsPage() {
       const handleAdd = () => {
         const val = inputVal.trim();
         if (!val) return;
-        updateField(record.key, di, [...tags, val]);
+        // 按空格或逗号分隔，支持一次输入多个
+        const newTags = val.split(/[\s,，]+/).filter(Boolean);
+        updateField(record.key, di, [...tags, ...newTags]);
         setInputVal('');
       };
       return (
