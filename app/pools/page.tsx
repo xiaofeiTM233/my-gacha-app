@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { App, Table, Input, InputNumber, Button, Popconfirm, Tag, Space } from 'antd';
 import { CloseOutlined, PlusOutlined as PlusIcon } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -256,6 +256,7 @@ export default function PoolsPage() {
     if (t === 'tags') {
       const tags: string[] = (Array.isArray(displayValue) ? displayValue : []) as string[];
       const [inputVal, setInputVal] = useState('');
+      const inputRef = useRef<any>(null);
       const handleAdd = () => {
         const val = inputVal.trim();
         if (!val) return;
@@ -263,6 +264,8 @@ export default function PoolsPage() {
         const newTags = val.split(/[\s,，]+/).filter(Boolean);
         updateField(record.key, di, [...tags, ...newTags]);
         setInputVal('');
+        // 保持聚焦
+        setTimeout(() => inputRef.current?.focus(), 0);
       };
       return (
         <td {...restProps} style={{ ...restProps.style, verticalAlign: 'top' }}>
@@ -280,6 +283,7 @@ export default function PoolsPage() {
             ))}
           </div>
           <Input
+            ref={inputRef}
             size="small"
             value={inputVal}
             placeholder="输入后按回车添加"
