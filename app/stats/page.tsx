@@ -103,8 +103,6 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
         .values()
     ).sort((a, b) => a[0].ts - b[0].ts);
 
-  const upChars = Array.from(new Set(items.filter((i) => i.isUp).map((i) => i.charName)));
-
   return (
     <>
       <Divider size="small" />
@@ -127,15 +125,17 @@ function PoolSection({ pool }: { pool: IPoolDetail }) {
         </Tag>
       </div>
 
+      {/* UP角色头像列表 */}
+      {pool.upList.length > 0 && (
+        <div className={pageStyles.upList}>
+          {pool.upList.map((name) => (
+            <CharAvatar key={name} name={name} game={pool.game} size={24} />
+          ))}
+        </div>
+      )}
+
       {hasItems ? (
         <>
-          {/* UP角色头像列表 */}
-          <div className={pageStyles.upList}>
-            {upChars.map((name) => (
-              <CharAvatar key={name} name={name} game={pool.game} size={24} />
-            ))}
-          </div>
-
           <Divider size="small" />
           {/* 出货记录列表 */}
           {groups.map((group, groupIdx) => {
