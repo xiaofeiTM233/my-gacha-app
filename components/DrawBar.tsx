@@ -15,17 +15,19 @@ export interface IMRItem {
 }
 
 // ====== 颜色工具函数 ======
-// 10以内超欧 | ≤55绿 | 56~100红 | >100深红
+// 10以内超欧 | ≤35绿 | 36~55黄 | 56~100红 | >100深红
 
 export function getBarColor(draws: number): string {
   if (draws > 100) return '#991b1b';
-  if (draws <= 55) return '#10b981';
+  if (draws <= 35) return '#10b981';
+  if (draws <= 55) return '#ecc867';
   return '#ef4444';
 }
 
 export function getBarBgColor(draws: number): string {
   if (draws > 100) return '#7f1d1d4d';
-  if (draws <= 55) return '#064e3b40';
+  if (draws <= 35) return '#064e3b40';
+  if (draws <= 55) return '#713f1233';
   return '#7f1d1d33';
 }
 
