@@ -33,8 +33,8 @@ export async function GET() {
     // 获取所有抽卡记录，按时间排序
     const allHistory = await History.find().sort({ ts: 1 }).lean();
 
-    // 获取所有卡池
-    const allPools = await Pool.find().lean();
+    // 获取所有卡池，按开启时间降序排列
+    const allPools = await Pool.find().sort({ startTs: -1 }).lean();
 
     // 按poolId分组历史记录
     const historyByPool = new Map<string, typeof allHistory>();
@@ -118,12 +118,6 @@ export async function GET() {
       });
     }
 
-    // 按结束时间倒序排列
-    pools.sort((a, b) => {
-      const dateA = a.endDate || a.startDate;
-      const dateB = b.endDate || b.startDate;
-      return dateB.localeCompare(dateA);
-    });
 
     const statsData: IStatsData = { pools };
 
