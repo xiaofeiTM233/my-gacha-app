@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Pool from '@/models/pool';
+import History from '@/models/history';
 
 // 获取所有卡池
 export async function GET() {
@@ -57,9 +58,39 @@ export async function PUT(request: Request) {
       );
     }
 
+    // 获取现有卡池，合并 up/mRarity 用于计算
+    const existing = await Pool.findOne({ id });
+    const upList = updateData.up ?? existing?.up ?? [];
+    const mRarity = updateData.mRarity ?? existing?.mRarity ?? 6;
+
+    // 根据历史记录自动计算统计字段
+    const historyRecords = await History.find({ poolId: id }).sort({ ts: 1 });
+    const draws = historyRecords.length;
+    const draws10 = historyRecords.filter((r) => r.pos === 9).length;
+    const upCount = historyRecords.filter((r) => upList.includes(r.result.name)).length;
+    const mRCount = historyRecords.filter((r) => r.rarity >= mRarity).length;
+
+    // 计算时间范围
+    let startTs = updateData.startTs ?? existing?.startTs;
+    let endTs = updateData.endTs ?? existing?.endTs;
+    if (historyRecords.length > 0) {
+      startTs = historyRecords[0].ts;
+      endTs = historyRecords[historyRecords.length - 1].ts;
+    }
+
     const pool = await Pool.findOneAndUpdate(
       { id },
-      { $set: updateData },
+      {
+        $set: {
+          ...updateData,
+          draws,
+          draws10,
+          upCount,
+          mRCount,
+          startTs,
+          endTs,
+        },
+      },
       { returnDocument: 'after' }
     );
 
