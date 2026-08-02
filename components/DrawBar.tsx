@@ -39,6 +39,13 @@ const AVATAR_COLORS = [
 // 图片头像底色
 const AVATAR_IMG_BG = '#d4d4d8';
 
+// 各游戏头像 URL
+const AVATAR_URLS = {
+  A: (name: string) => `https://prts.wiki/w/Special:Redirect/file/头像_${name}.png`,
+  EC: (name: string) => `https://wiki.biligame.com/zmd/Special:Redirect/file/${name}头像.png`,
+  EW: (name: string) => `https://wiki.biligame.com/zmd/Special:Redirect/file/${name}图标.png`,
+};
+
 // ====== 角色头像 ======
 export function CharAvatar({ name, isOffPity, game, size = 36 }: {
   name: string;
@@ -47,7 +54,7 @@ export function CharAvatar({ name, isOffPity, game, size = 36 }: {
   size?: number;
 }) {
   const bgColor = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-  const avatarUrl = game === 'A' ? `https://prts.wiki/w/Special:Redirect/file/头像_${name}.png` : undefined;
+  const avatarUrl = game && AVATAR_URLS[game as keyof typeof AVATAR_URLS]?.(name);
 
   return (
     <div className={styles.charAvatar}>
@@ -55,12 +62,12 @@ export function CharAvatar({ name, isOffPity, game, size = 36 }: {
         size={size}
         shape="square"
         src={avatarUrl}
-        className={game === 'A' ? styles.avatarImg : styles.avatarText}
-        style={game === 'A'
+        className={avatarUrl ? styles.avatarImg : styles.avatarText}
+        style={avatarUrl
           ? { backgroundColor: AVATAR_IMG_BG }
           : { backgroundColor: bgColor }}
       >
-        {game !== 'A' && name.charAt(0)}
+        {!avatarUrl && name.charAt(0)}
       </Avatar>
       {isOffPity && <span className={styles.offPityBadge}>歪</span>}
     </div>

@@ -27,6 +27,11 @@ const adapters = [
     label: 'Arknights',
     description: '支持导入明日方舟抽卡历史 JSON 数据，或通过 Token 自动获取',
   },
+  {
+    value: 'AdapterE',
+    label: 'Endfield',
+    description: '支持导入终末地抽卡历史数据，通过 Token 自动获取角色寻访和武器寻访记录',
+  },
 ];
 
 export default function ImportPage() {

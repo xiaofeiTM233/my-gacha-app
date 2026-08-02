@@ -28,7 +28,7 @@ export interface IApiResponse {
   msg: string;
 }
 
-// 适配器A - 处理特定格式的API数据
+// 适配器A - 处理明日方舟API数据
 export class AdapterA implements IAdapter {
   name = 'AdapterA';
 

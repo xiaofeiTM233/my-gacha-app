@@ -1,5 +1,6 @@
 // lib/adapters/index.ts
 import { AdapterA } from './A';
+import { AdapterE } from './E';
 
 // 适配器接口
 export interface IAdapter {
@@ -22,3 +23,4 @@ export function get(name: string): IAdapter | undefined {
 
 // 注册所有适配器
 register(new AdapterA());
+register(new AdapterE());
