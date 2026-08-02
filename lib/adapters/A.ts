@@ -1,7 +1,8 @@
-// lib/adapter.ts
-import dbConnect from './db';
-import History from '../models/history';
-import Pool from '../models/pool';
+// lib/adapters/A.ts
+import dbConnect from '../db';
+import History from '../../models/history';
+import Pool from '../../models/pool';
+import { IAdapter } from './index';
 
 // API返回的抽卡记录项接口
 export interface IApiResultItem {
@@ -25,15 +26,6 @@ export interface IApiResponse {
     hasMore: boolean;
   };
   msg: string;
-}
-
-// 适配器接口
-export interface IAdapter {
-  name: string;
-  validate(data: any): boolean;
-  transform(data: any): Promise<any>;
-  save(items: any[], extraData?: any): Promise<void>;
-  fetchByToken?(token: string): Promise<any>;
 }
 
 // 适配器A - 处理特定格式的API数据
@@ -331,107 +323,3 @@ export class AdapterA implements IAdapter {
     }
   }
 }
-
-/**
- * 适配器管理器
- */
-export class AdapterManager {
-  private adapters: Map<string, IAdapter> = new Map();
-
-  /**
-   * 注册适配器
-   */
-  register(adapter: IAdapter): void {
-    this.adapters.set(adapter.name, adapter);
-  }
-
-  /**
-   * 获取适配器
-   */
-  get(name: string): IAdapter | undefined {
-    return this.adapters.get(name);
-  }
-
-  /**
-   * 使用指定适配器处理数据
-   */
-  async process(adapterName: string, data: any): Promise<{ success: boolean; message: string }> {
-    const adapter = this.get(adapterName);
-
-    if (!adapter) {
-      return { success: false, message: `未找到适配器: ${adapterName}` };
-    }
-
-    // 验证数据
-    if (!adapter.validate(data)) {
-      return { success: false, message: '数据格式验证失败' };
-    }
-
-    try {
-      // 转换数据
-      const transformed = await adapter.transform(data);
-      const items = transformed.historyItems || transformed;
-      const poolInfo = transformed.poolInfo;
-
-      console.log(`🔄 已转换 ${items.length} 条抽卡记录`);
-      if (poolInfo && poolInfo.size > 0) {
-        console.log(`🎯 发现 ${poolInfo.size} 个新卡池`);
-      }
-
-      // 保存数据
-      await adapter.save(items, poolInfo);
-
-      let message = `成功保存 ${items.length} 条抽卡记录`;
-      if (poolInfo && poolInfo.size > 0) {
-        message += ` 和 ${poolInfo.size} 个卡池`;
-      }
-
-      return {
-        success: true,
-        message,
-      };
-    } catch (error) {
-      console.error('处理数据时出错:', error);
-      return {
-        success: false,
-        message: `处理数据时出错: ${error instanceof Error ? error.message : String(error)}`
-      };
-    }
-  }
-
-  /**
-   * 通过 Token 获取数据并导入
-   */
-  async fetchAndImport(adapterName: string, token: string): Promise<{ success: boolean; message: string }> {
-    const adapter = this.get(adapterName);
-
-    if (!adapter) {
-      return { success: false, message: `未找到适配器: ${adapterName}` };
-    }
-
-    if (!adapter.fetchByToken) {
-      return { success: false, message: `适配器 ${adapterName} 不支持 Token 获取` };
-    }
-
-    try {
-      // 通过 Token 获取数据
-      const data = await adapter.fetchByToken(token);
-      // 处理并保存数据
-      return await this.process(adapterName, data);
-    } catch (error) {
-      console.error('通过 Token 获取数据时出错:', error);
-      return {
-        success: false,
-        message: `获取数据失败: ${error instanceof Error ? error.message : String(error)}`
-      };
-    }
-  }
-}
-
-// 创建默认的适配器管理器实例
-export const adapterManager = new AdapterManager();
-
-// 注册默认适配器
-adapterManager.register(new AdapterA());
-
-export default adapterManager;

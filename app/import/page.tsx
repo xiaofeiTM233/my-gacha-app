@@ -65,7 +65,7 @@ export default function ImportPage() {
       const response = await fetch('/api/gacha/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ adapter: selectedAdapter, ...data }),
       });
 
       const res = await response.json();
