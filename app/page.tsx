@@ -106,11 +106,11 @@ export default function Home() {
     return avgB - avgA;
   })[0];
 
-  // 最近出货列表（所有卡池的 mRItems 扁平化，按卡池时间排序，取最近10条）
+  // 最近出货列表（所有卡池的 mRItems 扁平化，按出货时间由新到旧排序，取最近10条）
   const recentDrops = allPools
     .flatMap((p) => p.mRItems.map((item) => ({ ...item, poolName: p.name, poolId: p.id, game: p.game })))
-    .slice(-10)
-    .reverse();
+    .sort((a, b) => b.ts - a.ts)
+    .slice(0, 10);
 
   return (
     <div style={{ padding: 0 }}>
