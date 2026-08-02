@@ -12,6 +12,7 @@ import {
   Tabs,
   Divider,
   message,
+  Select,
 } from 'antd';
 import {
   ReloadOutlined,
@@ -184,6 +185,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('');
+  const [activeGame, setActiveGame] = useState<string>('全部');
 
   useEffect(() => {
     let cancelled = false;
@@ -238,8 +240,26 @@ export default function StatsPage() {
   // 当前选中的卡池
   const activePool = stats?.pools.find((p) => p.id === activeTab);
 
-  // 构建 Tabs
-  const tabItems = stats?.pools.map((pool) => ({
+  // 所有可用的游戏列表
+  const gameList = stats ? Array.from(new Set(stats.pools.map((p) => p.game))).filter(Boolean) : [];
+
+  // 按游戏筛选后的卡池
+  const filteredPools = stats?.pools.filter((p) => activeGame === '全部' || p.game === activeGame) || [];
+
+  // 切换游戏时自动选中该游戏下的第一个卡池
+  const handleGameChange = (game: string) => {
+    setActiveGame(game);
+    const pools = stats?.pools || [];
+    const next = pools.filter((p) => game === '全部' || p.game === game);
+    if (next.length > 0) {
+      setActiveTab(next[0].id);
+    } else {
+      setActiveTab('');
+    }
+  };
+
+  // 构建 Tabs（基于筛选后的卡池）
+  const tabItems = filteredPools.map((pool) => ({
     key: pool.id,
     label: (
       <div className={pageStyles.tabLabel}>
@@ -248,21 +268,33 @@ export default function StatsPage() {
       </div>
     ),
     children: null,
-  })) || [];
+  }));
 
   return (
     <div className={pageStyles.pageWrapper}>
       {/* 页面标题栏 */}
       <div className={pageStyles.pageHeader}>
         <span className={pageStyles.pageTitle}>抽卡统计</span>
-        <Button
-          type="text"
-          size="small"
-          icon={<ReloadOutlined spin={loading} />}
-          onClick={fetchStats}
-          disabled={loading}
-          className={pageStyles.reloadBtn}
-        />
+        <div className={pageStyles.pageHeaderRight}>
+          {/* 游戏筛选 */}
+          {stats && stats.pools.length > 0 && gameList.length > 0 && (
+            <Select
+              value={activeGame}
+              onChange={handleGameChange}
+              options={[{ label: '全部', value: '全部' }, ...gameList.map((g) => ({ label: g, value: g }))]}
+              size="small"
+              variant="filled"
+            />
+          )}
+          <Button
+            type="text"
+            size="small"
+            icon={<ReloadOutlined spin={loading} />}
+            onClick={fetchStats}
+            disabled={loading}
+            className={pageStyles.reloadBtn}
+          />
+        </div>
       </div>
 
       {/* 加载状态 */}
@@ -280,7 +312,7 @@ export default function StatsPage() {
       )}
 
       {/* 卡池 Tab 切换 */}
-      {stats && stats.pools.length > 0 && (
+      {stats && filteredPools.length > 0 && (
         <>
           <Tabs
             activeKey={activeTab}
@@ -299,6 +331,13 @@ export default function StatsPage() {
       {stats && stats.pools.length === 0 && (
         <div className={pageStyles.centerBlockTight}>
           <Empty description={<span>暂无抽卡数据<br /><span className={pageStyles.emptySubtext}>请先导入抽卡记录</span></span>} />
+        </div>
+      )}
+
+      {/* 游戏筛选后无数据 */}
+      {stats && stats.pools.length > 0 && filteredPools.length === 0 && (
+        <div className={pageStyles.centerBlockTight}>
+          <Empty description={<span>该游戏暂无卡池</span>} />
         </div>
       )}
     </div>
