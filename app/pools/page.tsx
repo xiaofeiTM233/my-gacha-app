@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { App, Table, Input, InputNumber, Button, Popconfirm, Tag, Space } from 'antd';
+import { App, Table, Input, InputNumber, Button, Popconfirm, Tag, Space, Select } from 'antd';
 import { CloseOutlined, PlusOutlined as PlusIcon } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PlusOutlined, DeleteOutlined, SaveOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -36,6 +36,8 @@ export default function PoolsPage() {
   const [newRowKey, setNewRowKey] = useState<string>('');
   // 存储每行编辑中的临时数据
   const [editCache, setEditCache] = useState<Record<string, Partial<DataType>>>({});
+  // 按游戏筛选
+  const [activeGame, setActiveGame] = useState<string>('全部');
 
   const fetchPools = useCallback(async () => {
     setLoading(true);
@@ -443,12 +445,24 @@ export default function PoolsPage() {
     };
   });
 
+  // 所有可用的游戏列表
+  const gameList = Array.from(new Set(dataSource.map((p) => p.game))).filter(Boolean);
+  // 按游戏筛选后的卡池
+  const filteredDataSource = dataSource.filter((p) => activeGame === '全部' || p.game === activeGame);
+
   return (
     <div style={{ padding: 0 }}>
       <div style={{ maxWidth: 1600, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fff', margin: 0 }}>卡池管理</h1>
           <Space>
+            {gameList.length > 0 && (
+              <Select
+                value={activeGame}
+                onChange={setActiveGame}
+                options={[{ label: '全部', value: '全部' }, ...gameList.map((g) => ({ label: g, value: g }))]}
+              />
+            )}
             <Button icon={<ReloadOutlined />} onClick={fetchPools} loading={loading}>
               刷新
             </Button>
@@ -464,7 +478,7 @@ export default function PoolsPage() {
               cell: EditableCell,
             },
           }}
-          dataSource={dataSource}
+          dataSource={filteredDataSource}
           columns={mergedColumns as ColumnsType<DataType>}
           loading={loading}
           rowClassName={(record) => (isEditing(record) ? 'editing-row' : '')}
