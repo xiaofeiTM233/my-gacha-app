@@ -12,6 +12,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!adapter.validate(data)) {
+      console.log('validate 失败, list 长度:', data?.data?.list?.length);
+      if (data?.data?.list?.length > 0) console.log('第一条:', JSON.stringify(data.data.list[0]));
       return NextResponse.json({ code: -1, msg: '数据格式验证失败' }, { status: 400 });
     }
 

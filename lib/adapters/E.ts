@@ -176,11 +176,10 @@ export class AdapterE implements IAdapter {
     if (data.code !== 0) return false;
     if (!data.data || !data.data.list || !Array.isArray(data.data.list)) return false;
 
-    // 检查列表中每一项的字段
-    return data.data.list.every((item: any) => {
+    const invalid = data.data.list.find((item: any) => {
       const hasName = item.charName || item.weaponName;
       const hasId = item.charId || item.weaponId;
-      return (
+      return !(
         hasName && typeof hasName === 'string' &&
         hasId && typeof hasId === 'string' &&
         item.poolId && typeof item.poolId === 'string' &&
@@ -188,6 +187,11 @@ export class AdapterE implements IAdapter {
         item.gachaTs && typeof item.gachaTs === 'string'
       );
     });
+    if (invalid) {
+      console.log('validate 失败记录:', JSON.stringify(invalid));
+      return false;
+    }
+    return true;
   }
 
   /**
