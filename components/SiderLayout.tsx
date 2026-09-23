@@ -113,7 +113,7 @@ export default function SiderLayout({ children }: { children: React.ReactNode })
             borderBottom: '1px solid #303030',
             position: 'sticky',
             top: 0,
-            zIndex: 10,
+            zIndex: 100,
           }}
         >
           <div
