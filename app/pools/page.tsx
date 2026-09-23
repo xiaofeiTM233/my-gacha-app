@@ -259,7 +259,7 @@ export default function PoolsPage() {
       const tags: string[] = (Array.isArray(displayValue) ? displayValue : []) as string[];
       const [inputVal, setInputVal] = useState('');
       const inputRef = useRef<any>(null);
-      const handleAdd = () => {
+      const handleAdd = (keepFocus = false) => {
         const val = inputVal.trim();
         if (!val) return;
         // 按空格或逗号分隔，支持一次输入多个
@@ -267,7 +267,9 @@ export default function PoolsPage() {
         updateField(record.key, di, [...tags, ...newTags]);
         setInputVal('');
         // 保持聚焦
-        setTimeout(() => inputRef.current?.focus(), 0);
+        if (keepFocus) {
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }
       };
       return (
         <td {...restProps} style={{ ...restProps.style, verticalAlign: 'top' }}>
@@ -290,8 +292,9 @@ export default function PoolsPage() {
             value={inputVal}
             placeholder="输入后按回车添加"
             onChange={(e) => setInputVal(e.target.value)}
-            onPressEnter={handleAdd}
-            suffix={<PlusIcon onClick={handleAdd} style={{ cursor: 'pointer', color: '#999', fontSize: 12 }} />}
+            onPressEnter={() => handleAdd(true)}
+            onBlur={() => handleAdd(false)}
+            suffix={<PlusIcon onMouseDown={(e) => e.preventDefault()} onClick={() => handleAdd(true)} style={{ cursor: 'pointer', color: '#999', fontSize: 12 }} />}
           />
         </td>
       );
