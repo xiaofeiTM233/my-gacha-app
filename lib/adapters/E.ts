@@ -250,9 +250,21 @@ export class AdapterE implements IAdapter {
       try {
         const existing = await Pool.findOne({ id: poolId });
 
-        const historyRecords = await History.find({ poolId }).sort({ ts: 1 });
+        const historyRecords = await History.find({ poolId }).sort({ ts: 1 }).lean();
         const draws = historyRecords.length;
-        const draws10 = historyRecords.filter(r => r.pos === 9).length;
+        // E 系列记录没有 pos 字段，无法用 pos===9 判断十连。
+        // 改用 seqId 判断：seqId 是全局连续递增的总计数，一次十连的 10 条记录 seqId 依次 +1。
+        // E 系列 transform 时把 seqId 存进了 History.id，按 seqId 排序后统计连续段内每满 10 条记一次十连。
+        const bySeq = [...historyRecords].sort((a, b) => Number(a.id) - Number(b.id));
+        let draws10 = 0;
+        let run = 0;
+        let prevSeq: number | null = null;
+        for (const r of bySeq) {
+          const seq = Number(r.id);
+          run = prevSeq !== null && Number.isFinite(seq) && seq === prevSeq + 1 ? run + 1 : 1;
+          if (run % 10 === 0) draws10++;
+          prevSeq = seq;
+        }
 
         const upList = existing?.up?.length ? existing.up : (poolData.up || []);
         const mRarity = existing?.mRarity || poolData.mRarity || 6;
